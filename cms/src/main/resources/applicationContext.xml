@@ -1,23 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tx="http://www.springframework.org/schema/tx"
 	xmlns:aop="http://www.springframework.org/schema/aop"
-	xsi:schemaLocation="
-http://www.springframework.org/schema/beans 
-http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
-http://www.springframework.org/schema/tx 
-http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
-http://www.springframework.org/schema/aop 
-http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+  http://www.springframework.org/schema/context
+  http://www.springframework.org/schema/context/spring-context-4.0.xsd
+  http://www.springframework.org/schema/tx 
+  http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+  http://www.springframework.org/schema/aop 
+  http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+  http://www.springframework.org/schema/mvc
+  http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+  http://www.springframework.org/schema/task
+  http://www.springframework.org/schema/task/spring-task-4.0.xsd">
+
+	<task:annotation-driven />
+
+	<!-- 开启Annotation注解注入配置 -->
+	<context:annotation-config />
+	<!-- 扫描包 -->
+	<context:component-scan base-package="com.jqd.cms" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Component" />
+	</context:component-scan>
 
 
 	<!-- 引入属性文件 -->
-	<bean id="propertyConfigurer"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="location" value="classpath:jdbc.properties" />
 	</bean>
-	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
-		init-method="init" destroy-method="close">
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
 		<!-- 配置数据源的链接地址、账号、密码 -->
 		<property name="driverClassName" value="${jdbc_driverClass}"></property>
 		<property name="url" value="${jdbc_url}" />
@@ -47,6 +65,23 @@ http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
 	</bean>
 
 	<bean id="mapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="com.zhihuisystem.cms.*.dao" />
+		<property name="basePackage" value="com.jqd.cms.*.dao" />
 	</bean>
+	
+	<bean id="transcationManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" value="dataSource"></property>
+	</bean>
+	
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="save*" propagation="REQUIRED"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut expression="execution(* com.jqd.cms.*.service..*Impl.*(..))" id="transactionPointcut"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="transactionPointcut"/>
+	</aop:config>
+	
+	
 </beans>

@@ -6,8 +6,8 @@
 		<setting name="callSettersOnNulls" value="true" />
 	</settings>
 	<mappers>
-	
-	
+		<mapper resource="com/jqd/cms/system/dao/mapper/SysUserMapper.xml" />
+		<mapper resource="com/jqd/cms/system/dao/mapper/SysMenuMapper.xml" />
 	</mappers>
 
 </configuration>
